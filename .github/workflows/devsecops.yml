@@ -1,0 +1,31 @@
+name: DevSecOps CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    name: Static Analysis with tfsec and Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec
+        run: tfsec ./infra
+
+      - name: Install Trivy
+        run: |
+          sudo apt install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt update && sudo apt install trivy -y
+
+      - name: Trivy Image Scan
+        run: trivy image nginx
