@@ -8,14 +8,13 @@ on:
 jobs:
   tfsec:
     runs-on: ubuntu-latest
+    continue-on-error: true  # tfsec soft-fails, does not block pipeline
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
-        with:
-          soft_fail: true  # ✅ tfsec will not fail the job even if it finds issues
 
   trivy:
     runs-on: ubuntu-latest
